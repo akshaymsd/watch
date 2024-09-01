@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const productDB = require('../models/productscheme');
 const cartDB = require('../models/cartschema');
 const cartRouter = express.Router();
@@ -6,10 +7,23 @@ const cartRouter = express.Router();
 // Add item to cart
 cartRouter.post('/addItem', async (req, res) => {
   try {
+    console.log('Request Body:', req.body); // Log the request body
+
     const { productId, quantity, userId } = req.body;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.log('Invalid User ID');
+      return res.status(400).json({
+        Success: false,
+        Error: true,
+        Message: 'Invalid User ID'
+      });
+    }
 
     const product = await productDB.findById(productId);
     if (!product) {
+      console.log('Product not found');
       return res.status(404).json({
         Success: false,
         Error: true,
@@ -20,10 +34,11 @@ cartRouter.post('/addItem', async (req, res) => {
     const newItem = new cartDB({
       productId: product._id,
       userId: userId,
-      
       quantity: quantity,
     });
     const savedItem = await newItem.save();
+
+    console.log('Response Status Code:', 201);
     res.status(201).json({
       Success: true,
       Error: false,
@@ -31,6 +46,8 @@ cartRouter.post('/addItem', async (req, res) => {
       data: savedItem
     });
   } catch (error) {
+    console.error('Failed to add item to cart:', error.message); // Log the error message
+    console.log('Response Status Code:', 500);
     res.status(500).json({
       Success: false,
       Error: true,
@@ -40,13 +57,14 @@ cartRouter.post('/addItem', async (req, res) => {
   }
 });
 
+
+//******************************************************************************************************************* */
+
 // Update item in cart
 cartRouter.put('/updateItem/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedData = {
-      quantity: req.body.quantity
-    };
+    const updatedData = { quantity: req.body.quantity };
 
     const updatedItem = await cartDB.findByIdAndUpdate(id, updatedData, { new: true });
 
@@ -73,6 +91,7 @@ cartRouter.put('/updateItem/:id', async (req, res) => {
     });
   }
 });
+
 
 // Remove item from cart
 cartRouter.delete('/removeItem/:id', async (req, res) => {
@@ -105,6 +124,7 @@ cartRouter.delete('/removeItem/:id', async (req, res) => {
 });
 
 // Get all items in cart for a specific user
+// Ensure this route is correctly set up in cartRouter
 cartRouter.get('/viewCart/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -125,5 +145,6 @@ cartRouter.get('/viewCart/:userId', async (req, res) => {
     });
   }
 });
+
 
 module.exports = cartRouter;

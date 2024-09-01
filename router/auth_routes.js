@@ -71,56 +71,66 @@ authRouter .post('/', async (req, res) => {
 });
 
 
-authRouter .post('/login', async (req, res) => {
-    try {
-      if (req.body.username && req.body.password) {
-        const oldUser = await authDB.findOne({
-          username: req.body.username,
-        });
-        if (!oldUser) {
-          return res.status(400).json({
-            Success: false,
-            Error: true,
-            Message: 'Register First',
-          });
-        }
-  
-  
-        const isPasswordCorrect = await bcrypt.compare(
-          req.body.password,
-          oldUser.password
-        );
-        if (!isPasswordCorrect) {
-          return res.status(401).json({
-            Success: false,
-            Error: true,
-            Message: 'Password Incorrect',
-          });
-        }else{
-  
-  
-        return res.status(200).json({
-          success: true,
-          error: false,
-          message: 'Login Succesful'
-         });
-  }
-      } else {
+authRouter.post('/login', async (req, res) => {
+  try {
+    if (req.body.username && req.body.password) {
+      // Find user by username
+      const oldUser = await authDB.findOne({
+        username: req.body.username,
+      });
+
+      if (!oldUser) {
         return res.status(400).json({
           Success: false,
           Error: true,
-          Message: 'All field are required',
+          Message: 'Register First',
         });
       }
-    } catch (error) {
-      return res.status(500).json({
+
+      // Compare the password
+      const isPasswordCorrect = await bcrypt.compare(
+        req.body.password,
+        oldUser.password
+      );
+
+      if (!isPasswordCorrect) {
+        return res.status(401).json({
+          Success: false,
+          Error: true,
+          Message: 'Password Incorrect',
+        });
+      } else {
+        // Return user data on successful login
+        return res.status(200).json({
+          success: true,
+          error: false,
+          message: 'Login Successful',
+          data: {
+            _id: oldUser._id,
+            username: oldUser.username,
+            name: oldUser.name,
+            email: oldUser.email,
+            phone: oldUser.phone,
+            __v: oldUser.__v,
+          },
+        });
+      }
+    } else {
+      return res.status(400).json({
         Success: false,
         Error: true,
-        Message: 'Internal Server Error',
-        ErrorMessage: error.message,
+        Message: 'All fields are required',
       });
     }
-  });
+  } catch (error) {
+    return res.status(500).json({
+      Success: false,
+      Error: true,
+      Message: 'Internal Server Error',
+      ErrorMessage: error.message,
+    });
+  }
+});
 
   
   module.exports = authRouter ;
