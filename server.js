@@ -5,6 +5,8 @@ const brandRouter = require('./router/brand_routes');
 const cartRouter = require('./router/cart_router');
 const product_routes = require('./router/product_routes');
 const complaintrouter = require('./router/complaint_router');
+const replyRouter = require('./router/reply_router');
+const review_router = require('./router/review_routes');
 require('dotenv').config();
 
 const app = express();
@@ -24,7 +26,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/brands', brandRouter);
 app.use('/api/products', product_routes);
 app.use('/api/cart', cartRouter);
-app.use('/api/complaints', complaintrouter); // Use the correct router
+app.use('/api/complaints', complaintrouter);
+app.use('/api/reply',replyRouter);
+app.use('/api/review',review_router) 
 
 app.listen(process.env.PORT, () => {
   console.log(`Server Started on port ${process.env.PORT}`);

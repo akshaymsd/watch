@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const productSchema = new mongoose.Schema({
+const exploreSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -15,12 +15,21 @@ const productSchema = new mongoose.Schema({
     },
     brief: {
         type: String,
-        required: false
+        required: true
     },
     price: {
         type: Number, 
         required: true
     },
+    offerprice: {
+        type: Number, 
+        required: true
+    },
+    offer: {
+        type: Number, 
+        required: true
+    },
+
     image: {
         type: String, 
         required: false 
@@ -28,19 +37,7 @@ const productSchema = new mongoose.Schema({
     description: {
         type: String,
         required: false 
-    },
-    offerprice: {
-        type: Number, 
-        required: false
-    },
-    offer: {
-        type: Number, 
-        required: false
-    },
-    sale: {
-        type: String, 
-        required: false
-    },
+    }
 });
-var productDB=mongoose.model('Product', productSchema);
-module.exports = productDB
+var exploreDB=mongoose.model('explore', exploreSchema);
+module.exports = exploreDB

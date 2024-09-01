@@ -5,6 +5,8 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const wishListDB = require("../models/wishlistschema");
+const CategoryDB = require("../models/categoryschema");
+const exploreDB = require("../models/exploreschema");
 require('dotenv').config();
 
 
@@ -28,8 +30,12 @@ product_routes.post('/addProduct', upload.single('image'), async (req, res) => {
         type: req.body.type,
         brand: req.body.brand,
         price:req.body.price,
+        brief:req.body.brief,
         description:req.body.description,
-        image:req.file.path
+        image:req.file.path,
+        offer:req.body.offer,
+        offerprice:req.body.offerprice,
+        sale:req.body.sale,
     
        
       };
@@ -247,7 +253,184 @@ product_routes.post('/addProduct', upload.single('image'), async (req, res) => {
       });
     }
   });
+
+  // *****************************************<<<<<<<category>>>>>>***************************************************************************
   
+// add category
+
+product_routes.post('/category/add', upload.single('image'),async(req,res)=>{
+  try{
+    const newCategory = new CategoryDB({
+      image:req.file.path,
+      categoryname:req.body.categoryname
+    });
+    const savedCategory=await newCategory.save();
+    res.status(201).json(savedCategory);
+  }catch(errr){
+    res.status(400).json({message:errr.message});
+  }
+});
+
+// view all category
+
+product_routes.get('/category/view', async (req, res) => {
+  try {
+    const categories = await CategoryDB.find();
+    res.json(categories);  // Use `res.json` to send the response
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+// view one item
+
+product_routes.get('/category/view/:id', async (req, res) => {
+  try {
+      const category = await CategoryDB.findById(req.params.id);
+      if (!category) return res.status(404).json({ message: 'Category not found' });
+      res.json(category);
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
+
+// update category
+
+product_routes.put('/category/update/:id', upload.single('image'), async (req, res) => {
+  try {
+    // Find the old category data using the ID from the request parameters
+    const oldcategoryData = await CategoryDB.findOne({ _id: req.params.id });
+
+    // If the category is not found, return a 404 error
+    if (!oldcategoryData) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    // Update the category data with the new values or keep the old values if not provided
+    const updatedCategory = await CategoryDB.findByIdAndUpdate(
+      req.params.id,
+      {
+        image: req.file ? req.file.path : oldcategoryData.image,
+        categoryname: req.body.categoryname || oldcategoryData.categoryname
+      },
+      { new: true } // To return the updated document
+    );
+
+    res.json(updatedCategory);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+
+// delete category
+
+product_routes.delete('/category/delete/:id', async (req, res) => {
+  try {
+      const deletedCategory = await CategoryDB.findByIdAndDelete(req.params.id);
+      if (!deletedCategory) return res.status(404).json({ message: 'Category not found' });
+      res.json({ message: 'Category deleted successfully' });
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
+
+// ******************************<<<<<Explore>>>>>>*********************************************
+
+
+product_routes.post('/explore/add', upload.single('image'), async (req, res) => {
+  try {
+      const newProduct = new exploreDB({
+          name: req.body.name,
+          type: req.body.type,
+          brand: req.body.brand,
+          brief: req.body.brief,
+          price: req.body.price,
+          offerprice: req.body.offerprice,
+          offer: req.body.offer,
+          image: req.file ? req.file.path : null,
+          description: req.body.description
+      });
+
+      const savedProduct = await newProduct.save();
+      res.status(201).json(savedProduct);
+  } catch (err) {
+      res.status(400).json({ message: err.message });
+  }
+});
+
+// view
+
+product_routes.get('/explore/view', async (req, res) => {
+  try {
+      const products = await exploreDB.find();
+      res.json(products);
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
+
+// view by id
+
+product_routes.get('/explore/view/:id', async (req, res) => {
+  try {
+      const product = await exploreDB.findById(req.params.id);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.json(product);
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
+
+// update
+
+product_routes.put('/explore/update/:id', upload.single('image'), async (req, res) => {
+  try {
+      const oldProductData = await exploreDB.findById(req.params.id);
+
+      if (!oldProductData) return res.status(404).json({ message: 'Product not found' });
+
+      const updatedProduct = await exploreDB.findByIdAndUpdate(
+          req.params.id,
+          {
+              name: req.body.name || oldProductData.name,
+              type: req.body.type || oldProductData.type,
+              brand: req.body.brand || oldProductData.brand,
+              brief: req.body.brief || oldProductData.brief,
+              price: req.body.price || oldProductData.price,
+              offerprice: req.body.offerprice || oldProductData.offerprice,
+              offer: req.body.offer || oldProductData.offer,
+              image: req.file ? req.file.path : oldProductData.image,
+              description: req.body.description || oldProductData.description
+          },
+          { new: true } // To return the updated document
+      );
+
+      res.json(updatedProduct);
+  } catch (err) {
+      res.status(400).json({ message: err.message });
+  }
+});
+
+// delete
+
+product_routes.delete('/explore/delete/:id', async (req, res) => {
+  try {
+      const deletedProduct = await exploreDB.findByIdAndDelete(req.params.id);
+      if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
+      res.json({ message: 'Product deleted' });
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
+
+
+
+
+
+
+
 
 module.exports=product_routes
 

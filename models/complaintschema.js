@@ -11,10 +11,13 @@ const complaintsSchema = new mongoose.Schema({
     required: true,
   },
   date: {
-    type: String,
-    required: true,
+    type: Date,
+    default: Date.now,
   },
-  reply: { type: String, default: '...' },
+  reply: {
+    type: String,
+    default: 'No reply yet',
+  },
 });
 
 const complaintDB = mongoose.model('complaints', complaintsSchema);

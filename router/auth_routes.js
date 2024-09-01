@@ -2,6 +2,7 @@ const express = require('express');
 const authRouter = express.Router();
 const bcrypt = require('bcryptjs');
 const authDB = require('../models/authscheme');
+const AddressDB = require('../models/adrressschema');
  
 
 authRouter .post('/', async (req, res) => {
@@ -132,6 +133,68 @@ authRouter.post('/login', async (req, res) => {
   }
 });
 
+// address.........................
+
+authRouter.post('/address/add', async (req, res) => {
+  try {
+    const address = new AddressDB(req.body);
+    await address.save();
+    res.status(201).json(address);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// view address
+
+
+authRouter.get('/address/view/:userId', async (req, res) => {
+  try {
+    const addresses = await AddressDB.find({ userId: req.params.userId });
+    res.status(200).json(addresses);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// view Address
+
+authRouter.get('/address/:id', async (req, res) => {
+  try {
+    const address = await AddressDB.findById(req.params.id);
+    if (!address) return res.status(404).json({ message: 'Address not found' });
+    res.status(200).json(address);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// update
+
+authRouter.put('/address/update/:id', async (req, res) => {
+  try {
+    const address = await AddressDB.findByIdAndUpdate(req.params.id, req.body, {
+      new: true, // Return the updated document
+      runValidators: true, // Validate before updating
+    });
+    if (!address) return res.status(404).json({ message: 'Address not found' });
+    res.status(200).json(address);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// delete
+
+authRouter.delete('/address/delete/:id', async (req, res) => {
+  try {
+    const address = await AddressDB.findByIdAndDelete(req.params.id);
+    if (!address) return res.status(404).json({ message: 'Address not found' });
+    res.status(200).json({ message: 'Address deleted' });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
   
   module.exports = authRouter ;
     
